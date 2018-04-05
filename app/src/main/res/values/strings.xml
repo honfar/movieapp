@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Movie App</string>
     <string name="title_bar">Alec\'s Movie List</string>
+    <string name="button_text">Add a Movie</string>
+    <string name="title">Title: </string>
+    <string name="IMDB_code">IMDB Code: </string>
+    <string name="dialog_ok">yeash</string>
+    <string name="dialog_no">never</string>
 </resources>
