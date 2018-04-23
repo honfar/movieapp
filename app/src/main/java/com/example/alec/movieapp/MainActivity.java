@@ -1,7 +1,9 @@
 package com.example.alec.movieapp;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog alert;
     private AlertDialog swiped;
     private int storePosition;
+    private SharedPreferences p;
 
 
     @Override
@@ -34,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
         movieTitles = new ArrayList<String>();
         idsList = new ArrayList<String>();
+        p = getPreferences(Context.MODE_PRIVATE);
+
 
 
         //Swipe builder
@@ -54,6 +60,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 movieTitles.remove(storePosition);
                 idsList.remove(storePosition);
+                SharedPreferences.Editor e = p.edit();
+                System.out.println("MOVIE" + storePosition);
+                e.remove("MOVIE" + storePosition);
+                e.remove("CODE" + storePosition);
+                e.putInt("EXTRAMOVIES", p.getInt("EXTRAMOVIES", 0)-1);
+                e.apply();
+
+                Map<String, ?> map = p.getAll();
+
+                System.out.println("++++++++++++++++++++++" + map);
 
                 ArrayAdapter<String> adapter;
                 adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.list_item_view, movieTitles);
@@ -77,15 +93,24 @@ public class MainActivity extends AppCompatActivity {
 
         for(int i = 0; i<movies.length; i++) {
             movieTitles.add(movies[i]);
-        }
-
-        for(int i = 0; i<movies.length; i++){
             idsList.add(ids[i]);
         }
 
+
+
+        for(int i = 5; i < p.getInt("EXTRAMOVIES", 0)+5; i++){
+            movieTitles.add(p.getString("MOVIE"+i, "error"));
+            idsList.add(p.getString("CODE"+i, "error"));
+        }
+
+
+        Map<String, ?> map = p.getAll();
+
+        System.out.println("++++++++++++++++++++++" + map);
+
         listview = findViewById(R.id.movie_list);
         ArrayAdapter<String> adapter;
-        adapter = new ArrayAdapter<String>(this, R.layout.list_item_view, movies);
+        adapter = new ArrayAdapter<String>(this, R.layout.list_item_view, movieTitles);
         listview.setAdapter(adapter);
 
 
@@ -113,18 +138,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public boolean onTouchEvent(MotionEvent event){
+    /*public boolean onTouchEvent(MotionEvent event){
 
         swiped.show();
         return true;
-    }
+    } */
 
     public void buttonPressed(View v){
         Intent i = new Intent(this, MovieAdd.class);
         startActivityForResult(i, 1);
     }
 
-
+    @Override
+    public void onStop(){
+        super.onStop();
+        SharedPreferences.Editor e = p.edit();
+        for(int i = 5; i < movieTitles.size(); i++){
+        e.putString("MOVIE" + i, movieTitles.get(i));
+        e.putString("CODE" + i, idsList.get(i));
+        e.putInt("EXTRAMOVIES", movieTitles.size()-5);
+        }
+        e.apply();
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int ResultCode, Intent data){
